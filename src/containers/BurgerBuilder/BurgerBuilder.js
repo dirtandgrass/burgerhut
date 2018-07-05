@@ -1,12 +1,28 @@
 import React, { Component } from "react";
+import Burger from "../../components/Burger/Burger";
+import BuildControls from "../../components/Burger/BuildControls/BuildControls";
 const Fragment = React.Fragment;
 
 class BurgerBuilder extends Component {
+  // constructor (props) {
+  //     super(props);
+  //     this.state = {...};
+  // }
+
+  state = {
+    ingredients: {
+      salad: 1,
+      bacon: 1,
+      cheese: 2,
+      meat: 2,
+    },
+  };
+
   render() {
     return (
       <Fragment>
-        <div>Burger</div>
-        <div>Controls</div>
+        <Burger ingredients={this.state.ingredients} />
+        <BuildControls />
       </Fragment>
     );
   }
