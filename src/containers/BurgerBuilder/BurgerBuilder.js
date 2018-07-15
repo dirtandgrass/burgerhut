@@ -1,8 +1,10 @@
-import React, { Component } from "react";
-import Burger from "../../components/Burger/Burger";
-import BuildControls from "../../components/Burger/BuildControls/BuildControls";
-import Modal from "../../components/UI/Modal/Modal";
-import OrderSummary from "../../components/Burger/OrderSummary/OrderSummary";
+import React, { Component } from 'react';
+import Burger from '../../components/Burger/Burger';
+import BuildControls from '../../components/Burger/BuildControls/BuildControls';
+import Modal from '../../components/UI/Modal/Modal';
+import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
+import Spinner from '../../components/UI/Spinner/Spinner';
+import axios from '../../transport/orders';
 
 const Fragment = React.Fragment;
 
@@ -10,7 +12,7 @@ const INGREDIENT_PRICES = {
   salad: 0.05,
   bacon: 0.75,
   cheese: 0.5,
-  meat: 1.25,
+  meat: 1.25
 };
 class BurgerBuilder extends Component {
   // constructor (props) {
@@ -23,11 +25,12 @@ class BurgerBuilder extends Component {
       salad: 0,
       bacon: 0,
       cheese: 0,
-      meat: 0,
+      meat: 0
     },
     totalPrice: 3,
     purchaseable: false,
     purchasing: false,
+    loading: false
   };
 
   updatePurchaseState = ingredients => {
@@ -48,20 +51,41 @@ class BurgerBuilder extends Component {
     if (this.state.purchasing) this.setState({ purchasing: false });
   };
 
-  purchaseContinueHandler = () => {
-    alert("You Continue!");
+  purchaseContinueHandler = async () => {
+    // alert("You Continue!");
+    const order = {
+      ingredients: this.state.ingredients,
+      price: this.state.totalPrice,
+      customer: {
+        id: 1,
+        name: 'Luke',
+        address: {
+          street: 'York St.',
+          postalCode: 'A1B 2C3',
+          country: 'Canada'
+        },
+        email: 'testme@me.com'
+      },
+      deliveryMethod: 'fastest'
+    };
+    try {
+      const res = await axios.post('/orders.json', order);
+      console.log(res);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   addIngredientHandler = type => {
     // copy state
     const nIngredients = {
-      ...this.state.ingredients,
+      ...this.state.ingredients
     };
     nIngredients[type] = this.state.ingredients[type] + 1;
 
     this.setState({
       totalPrice: this.state.totalPrice + INGREDIENT_PRICES[type],
-      ingredients: nIngredients,
+      ingredients: nIngredients
     });
     this.updatePurchaseState(nIngredients);
   };
@@ -69,14 +93,14 @@ class BurgerBuilder extends Component {
   removeIngredientHandler = type => {
     // copy state
     const nIngredients = {
-      ...this.state.ingredients,
+      ...this.state.ingredients
     };
 
     if (this.state.ingredients[type] > 0) {
       nIngredients[type] = this.state.ingredients[type] - 1;
       this.setState({
         totalPrice: this.state.totalPrice - INGREDIENT_PRICES[type],
-        ingredients: nIngredients,
+        ingredients: nIngredients
       });
       this.updatePurchaseState(nIngredients);
     }
@@ -87,15 +111,22 @@ class BurgerBuilder extends Component {
     for (let key in disabledInfo) {
       disabledInfo[key] = disabledInfo[key] <= 0;
     }
+
+    if (this.state.loading) {
+    }
     return (
       <Fragment>
         <Modal show={this.state.purchasing} clicked={this.hidePurchaseHandler}>
-          <OrderSummary
-            ingredients={this.state.ingredients}
-            cancel={this.hidePurchaseHandler}
-            order={this.purchaseContinueHandler}
-            price={this.state.totalPrice}
-          />
+          {this.state.loading ? (
+            <Spinner />
+          ) : (
+            <OrderSummary
+              ingredients={this.state.ingredients}
+              cancel={this.hidePurchaseHandler}
+              order={this.purchaseContinueHandler}
+              price={this.state.totalPrice}
+            />
+          )}
         </Modal>
         <Burger ingredients={this.state.ingredients} />
         <BuildControls
